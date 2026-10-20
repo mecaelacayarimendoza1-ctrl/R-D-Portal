@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Request & Technical Document Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for clean dashboard look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation & Role Switcher Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-600 text-white p-2 rounded-xl shadow-md flex items-center justify-center">
+                    <i data-lucide="layers" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 text-lg leading-tight">OmniFlow Hub</h1>
+                    <p class="text-xs text-slate-500">Request & Technical Document Management System</p>
+                </div>
+            </div>
+
+            <!-- Role Switcher & User Profile -->
+            <div class="flex items-center space-x-4">
+                <div class="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200">
+                    <button id="roleRequestorBtn" onclick="switchRole('requestor')" class="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 bg-white text-brand-600 shadow-xs">
+                        <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                        <span>Requestor View</span>
+                    </button>
+                    <button id="roleOwnerBtn" onclick="switchRole('owner')" class="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-600 hover:text-slate-900">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                        <span>Owner / Admin View</span>
+                    </button>
+                </div>
+
+                <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+
+                <div class="flex items-center space-x-3">
+                    <button onclick="openNewRequestModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm hover:shadow transition-all flex items-center space-x-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>+ New Request</span>
+                    </button>
+                    <div class="w-9 h-9 rounded-full bg-slate-200 border-2 border-white shadow-xs overflow-hidden flex items-center justify-center font-bold text-slate-700 text-sm" id="userAvatarText">
+                        JD
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= REQUESTOR VIEW ================= -->
+        <div id="requestorView" class="space-y-6">
+            <!-- Banner / Greeting -->
+            <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-brand-700 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10">
+                    <i data-lucide="folder-kanban" class="w-64 h-64"></i>
+                </div>
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-indigo-700 text-indigo-100 text-xs font-medium px-3 py-1 rounded-full uppercase tracking-wider">Requestor Portal</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold mt-2">Welcome back, John Doe</h2>
+                    <p class="text-indigo-200 text-sm mt-1">Submit new technical sample requests, track active workflows in real-time, or browse the centralized document archive.</p>
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <button onclick="openNewRequestModal()" class="bg-white text-indigo-900 hover:bg-indigo-50 font-semibold px-4 py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center space-x-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Create Request Now</span>
+                        </button>
+                        <button onclick="switchTab('requestorDocs')" class="bg-indigo-800/80 hover:bg-indigo-800 text-white font-medium px-4 py-2.5 rounded-xl text-xs border border-indigo-600 transition-all flex items-center space-x-2">
+                            <i data-lucide="folder-search" class="w-4 h-4"></i>
+                            <span>Browse Document Library</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="border-b border-slate-200 flex space-x-8">
+                <button onclick="switchTab('requestorMyRequests')" id="tabReqMy" class="pb-3 border-b-2 border-brand-600 font-semibold text-sm text-brand-600 flex items-center space-x-2 transition-all">
+                    <i data-lucide="list-checks" class="w-4 h-4"></i>
+                    <span>My Submitted Requests</span>
+                </button>
+                <button onclick="switchTab('requestorDocs')" id="tabReqDocs" class="pb-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition-all">
+                    <i data-lucide="archive" class="w-4 h-4"></i>
+                    <span>Centralized Document Folder</span>
+                </button>
+            </div>
+
+            <!-- Tab Content 1: My Submitted Requests -->
+            <div id="requestorMyRequestsContent" class="space-y-6">
+                <!-- Filters & Search Bar -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div class="relative w-full sm:w-80">
+                        <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="reqSearchInput" oninput="filterRequestorTable()" placeholder="Search item, client, request #..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                        <select id="reqStatusFilter" onchange="filterRequestorTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="">All Statuses</option>
+                            <option value="For Review">For Review</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Urgent">Urgent / Due Soon</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Requests Table -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/70 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    <th class="py-3 px-4">Req ID</th>
+                                    <th class="py-3 px-4">Client / Item</th>
+                                    <th class="py-3 px-4">Classification & Type</th>
+                                    <th class="py-3 px-4">Date Needed</th>
+                                    <th class="py-3 px-4">Phase / Status</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestorTableBody" class="divide-y divide-slate-100 text-xs text-slate-700">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content 2: Requestor Centralized Document Folder -->
+            <div id="requestorDocsContent" class="space-y-6 hidden">
+                <!-- Document Hub Explorer (Shared Component Rendered via JS) -->
+                <div id="documentHubContainerRequestor"></div>
+            </div>
+        </div>
+
+        <!-- ================= OWNER / ADMIN VIEW ================= -->
+        <div id="ownerView" class="space-y-6 hidden">
+            <!-- Dashboard Top Metrics -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Requests</p>
+                        <h3 class="text-2xl font-bold text-slate-900 mt-1" id="metricTotal">0</h3>
+                        <span class="text-xs text-emerald-600 font-medium flex items-center mt-1"><i data-lucide="trending-up" class="w-3 h-3 mr-1"></i> +12% this month</span>
+                    </div>
+                    <div class="bg-indigo-50 text-brand-600 p-3.5 rounded-2xl">
+                        <i data-lucide="file-text" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Urgent / Due Soon</p>
+                        <h3 class="text-2xl font-bold text-rose-600 mt-1" id="metricUrgent">0</h3>
+                        <span class="text-xs text-rose-500 font-medium flex items-center mt-1"><i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Immediate action needed</span>
+                    </div>
+                    <div class="bg-rose-50 text-rose-600 p-3.5 rounded-2xl">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Requests</p>
+                        <h3 class="text-2xl font-bold text-amber-600 mt-1" id="metricActive">0</h3>
+                        <span class="text-xs text-slate-500 font-medium flex items-center mt-1">In progress workflows</span>
+                    </div>
+                    <div class="bg-amber-50 text-amber-600 p-3.5 rounded-2xl">
+                        <i data-lucide="activity" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Completed Docs</p>
+                        <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="metricCompleted">0</h3>
+                        <span class="text-xs text-emerald-600 font-medium flex items-center mt-1"><i data-lucide="check-circle-2" class="w-3 h-3 mr-1"></i> Successfully finalized</span>
+                    </div>
+                    <div class="bg-emerald-50 text-emerald-600 p-3.5 rounded-2xl">
+                        <i data-lucide="check-check" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Owner Tabs Navigation -->
+            <div class="border-b border-slate-200 flex space-x-8">
+                <button onclick="switchOwnerTab('dashboard')" id="tabOwnerDash" class="pb-3 border-b-2 border-brand-600 font-semibold text-sm text-brand-600 flex items-center space-x-2 transition-all">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>Analytics & Metrics</span>
+                </button>
+                <button onclick="switchOwnerTab('requests')" id="tabOwnerReqs" class="pb-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition-all">
+                    <i data-lucide="table" class="w-4 h-4"></i>
+                    <span>Request Management Table</span>
+                </button>
+                <button onclick="switchOwnerTab('docs')" id="tabOwnerDocs" class="pb-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition-all">
+                    <i data-lucide="folder-cog" class="w-4 h-4"></i>
+                    <span>Centralized Resource Folder</span>
+                </button>
+            </div>
+
+            <!-- Owner Tab 1: Charts & Analytics -->
+            <div id="ownerDashboardContent" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Chart 1: Request Type Distribution -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm">Request Type Distribution</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Breakdown by request classification category</p>
+                        </div>
+                        <div class="relative h-64 my-4 flex items-center justify-center">
+                            <canvas id="chartTypeDist"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Request by Classification -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm">Requests by Classification</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Material & packaging segments</p>
+                        </div>
+                        <div class="relative h-64 my-4 flex items-center justify-center">
+                            <canvas id="chartClassification"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Status / Phase Breakdown -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm">Request Status / Phase</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Current operational phase status</p>
+                        </div>
+                        <div class="relative h-64 my-4 flex items-center justify-center">
+                            <canvas id="chartStatusPhase"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Owner Tab 2: Advanced Data Tables & Management -->
+            <div id="ownerRequestsContent" class="space-y-6 hidden">
+                <!-- Advanced Filtering & Search Bar -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap gap-4 items-center justify-between">
+                    <div class="relative flex-1 min-w-[240px]">
+                        <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="ownerSearchInput" oninput="filterOwnerTable()" placeholder="Search requestor, department, client, item..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <select id="ownerDeptFilter" onchange="filterOwnerTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none">
+                            <option value="">All Departments</option>
+                            <option value="PPIC">PPIC</option>
+                            <option value="Quality Control/Assurance">Quality Control/Assurance</option>
+                            <option value="Accounts/Sales">Accounts/Sales</option>
+                            <option value="Pre-Press">Pre-Press</option>
+                            <option value="Others">Others</option>
+                        </select>
+                        <select id="ownerStatusFilter" onchange="filterOwnerTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none">
+                            <option value="">All Statuses</option>
+                            <option value="For Review">For Review</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Urgent">Urgent / Due Soon</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Owner Main Table -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/70 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    <th class="py-3 px-4">Req ID & Requester</th>
+                                    <th class="py-3 px-4">Department & Client</th>
+                                    <th class="py-3 px-4">Item & Classification</th>
+                                    <th class="py-3 px-4">Request Type</th>
+                                    <th class="py-3 px-4">Date Needed</th>
+                                    <th class="py-3 px-4">Status / Phase</th>
+                                    <th class="py-3 px-4 text-right">Manage</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ownerTableBody" class="divide-y divide-slate-100 text-xs text-slate-700">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Owner Tab 3: Centralized Resource Folder -->
+            <div id="ownerDocsContent" class="space-y-6 hidden">
+                <div id="documentHubContainerOwner"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- New Request Modal -->
+    <div id="newRequestModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-brand-50 text-brand-600 p-2 rounded-xl">
+                        <i data-lucide="file-plus" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">Submit New Request</h3>
+                        <p class="text-xs text-slate-500">Fill out all required project parameters</p>
+                    </div>
+                </div>
+                <button onclick="closeNewRequestModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="newRequestForm" onsubmit="handleNewRequestSubmit(event)" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Requester Name (Surname, Given Name) <span class="text-rose-500">*</span></label>
+                        <input type="text" id="reqName" required placeholder="e.g. Doe, John" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address <span class="text-rose-500">*</span></label>
+                        <input type="email" id="reqEmail" required placeholder="john.doe@company.com" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Department <span class="text-rose-500">*</span></label>
+                        <select id="reqDepartment" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="">Select Department</option>
+                            <option value="PPIC">PPIC</option>
+                            <option value="Quality Control/Assurance">Quality Control/Assurance</option>
+                            <option value="Accounts/Sales">Accounts/Sales</option>
+                            <option value="Pre-Press">Pre-Press</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Client Name <span class="text-rose-500">*</span></label>
+                        <input type="text" id="reqClientName" required placeholder="e.g. Acme Corporation" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Item Description <span class="text-rose-500">*</span></label>
+                    <textarea id="reqItemDesc" required rows="2" placeholder="Detailed item specification or project requirement..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Classification <span class="text-rose-500">*</span></label>
+                        <select id="reqClassification" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="">Select Classification</option>
+                            <option value="Paper and Paperboard">Paper and Paperboard</option>
+                            <option value="Flexible Packaging">Flexible Packaging</option>
+                            <option value="Rigid Plastics">Rigid Plastics</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Request Type <span class="text-rose-500">*</span></label>
+                        <select id="reqType" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="">Select Request Type</option>
+                            <option value="Product Samples">Product Samples</option>
+                            <option value="Product Evaluation">Product Evaluation</option>
+                            <option value="Raw Material Evaluation">Raw Material Evaluation</option>
+                            <option value="Technical Specifications (Internal)">Technical Specifications (Internal)</option>
+                            <option value="Technical Specifications (External)">Technical Specifications (External)</option>
+                            <option value="Packing Recommendation for Costing">Packing Recommendation for Costing</option>
+                            <option value="Certificate of Inspection">Certificate of Inspection</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Date Needed <span class="text-rose-500">*</span></label>
+                        <input type="date" id="reqDateNeeded" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">File Attachment</label>
+                        <input type="file" id="reqFile" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeNewRequestModal()" class="px-4 py-2.5 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition-all">Cancel</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center space-x-2">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                        <span>Submit Request</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Status Update Modal (Owner) -->
+    <div id="statusModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-slate-900 text-base">Update Request Status & Phase</h3>
+                <button onclick="closeStatusModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <input type="hidden" id="editReqId">
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Current Status</label>
+                <select id="editStatusVal" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none">
+                    <option value="For Review">For Review</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Workflow Phase</label>
+                <select id="editPhaseVal" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none">
+                    <option value="Initial Submission">Initial Submission</option>
+                    <option value="Technical Review">Technical Review</option>
+                    <option value="Sample Preparation">Sample Preparation</option>
+                    <option value="Evaluation & Testing">Evaluation & Testing</option>
+                    <option value="Final Approval">Final Approval</option>
+                </select>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeStatusModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
+                <button onclick="saveRequestStatus()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-sm">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Document Modal -->
+    <div id="uploadDocModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 p-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-slate-900 text-base">Upload New Document to Archive</h3>
+                <button onclick="closeUploadDocModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="uploadDocForm" onsubmit="handleDocumentUploadSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Document Category / Folder</label>
+                    <select id="upCategory" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        <option value="Technical Specifications (Initial)">Technical Specifications (Initial)</option>
+                        <option value="Technical Specifications (Internal)">Technical Specifications (Internal)</option>
+                        <option value="Technical Specifications (External)">Technical Specifications (External)</option>
+                        <option value="Material Evaluation">Material Evaluation</option>
+                        <option value="Product Evaluation">Product Evaluation</option>
+                        <option value="Certificate of Inspection">Certificate of Inspection</option>
+                        <option value="Test Report">Test Report</option>
+                        <option value="Packing Recommendation">Packing Recommendation</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Client / Sub-folder Tag</label>
+                        <input type="text" id="upClientTag" required placeholder="e.g. Acme Corp or Inks" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Folder Sub-type</label>
+                        <select id="upFolderType" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                            <option value="Approved">Approved</option>
+                            <option value="Templates/Formats">Templates/Formats</option>
+                            <option value="Superseded">Superseded</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Document Code</label>
+                        <input type="text" id="upDocCode" required placeholder="DOC-2026-001" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Document Status</label>
+                        <select id="upDocStatus" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                            <option value="Active">Active</option>
+                            <option value="For Review">For Review</option>
+                            <option value="For Approval">For Approval</option>
+                            <option value="On-going">On-going</option>
+                            <option value="Supervised">Supervised</option>
+                            <option value="Obsolete">Obsolete</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Item Description / Title</label>
+                    <input type="text" id="upItemDesc" required placeholder="Polyethylene Film Spec Sheet v3" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Effectivity Date</label>
+                        <input type="date" id="upEffectivity" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Revision Number</label>
+                        <input type="text" id="upRevNo" required value="Rev. 01" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Select File</label>
+                    <input type="file" id="upFileObj" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeUploadDocModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-sm">Upload Document</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-xs transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+        <span id="toastMsg">Action completed successfully.</span>
+    </div>
+
+    <script>
+        // --- MOCK DATABASE ---
+        let requestsData = [
+            {
+                id: "REQ-2026-101",
+                requester: "Doe, John",
+                email: "john.doe@company.com",
+                department: "PPIC",
+                clientName: "Acme Corporation",
+                itemDesc: "High-barrier retort pouch film with custom matte lacquer",
+                classification: "Flexible Packaging",
+                requestType: "Product Samples",
+                dateNeeded: "2026-10-18",
+                fileName: "acme_retort_spec.pdf",
+                status: "In Progress",
+                phase: "Sample Preparation"
+            },
+            {
+                id: "REQ-2026-102",
+                requester: "Santos, Maria",
+                email: "maria.santos@company.com",
+                department: "Quality Control/Assurance",
+                clientName: "Global Foods Inc.",
+                itemDesc: "Corrugated carton crush test inspection & certificate",
+                classification: "Paper and Paperboard",
+                requestType: "Certificate of Inspection",
+                dateNeeded: "2026-10-12",
+                fileName: "global_test_report.pdf",
+                status: "For Review",
+                phase: "Technical Review"
+            },
+            {
+                id: "REQ-2026-103",
+                requester: "Reyes, Carlo",
+                email: "carlo.reyes@company.com",
+                department: "Accounts/Sales",
+                clientName: "Apex Retailers",
+                itemDesc: "Rigid PET clamshell container packing cost optimization",
+                classification: "Rigid Plastics",
+                requestType: "Packing Recommendation for Costing",
+                dateNeeded: "2026-10-25",
+                fileName: "apex_pet_dimensions.png",
+                status: "In Progress",
+                phase: "Initial Submission"
+            },
+            {
+                id: "REQ-2026-104",
+                requester: "Bautista, Anna",
+                email: "anna.bautista@company.com",
+                department: "Pre-Press",
+                clientName: "SunValley Beverages",
+                itemDesc: "Polypropylene sleeve label raw material ink adhesion test",
+                classification: "Flexible Packaging",
+                requestType: "Raw Material Evaluation",
+                dateNeeded: "2026-10-14",
+                fileName: "ink_adhesion_specs.pdf",
+                status: "Completed",
+                phase: "Final Approval"
+            },
+            {
+                id: "REQ-2026-105",
+                requester: "Tan, Kevin",
+                email: "kevin.tan@company.com",
+                department: "PPIC",
+                clientName: "Metro Pharma",
+                itemDesc: "Child-resistant blister pack technical specifications",
+                classification: "Rigid Plastics",
+                requestType: "Technical Specifications (External)",
+                dateNeeded: "2026-10-13",
+                fileName: "pharma_blister_ext.pdf",
+                status: "For Review",
+                phase: "Technical Review"
+            }
+        ];
+
+        let documentsData = [
+            {
+                id: "DOC-2026-001",
+                category: "Technical Specifications (Initial)",
+                clientTag: "Acme Corporation",
+                folderType: "Approved",
+                itemDesc: "Retort Pouch Initial Engineering Specification",
+                effectivityDate: "2026-01-15",
+                revisionNumber: "Rev. 02",
+                docStatus: "Active",
+                fileName: "spec_acme_init_v2.pdf"
+            },
+            {
+                id: "DOC-2026-002",
+                category: "Technical Specifications (Internal)",
+                clientTag: "Acme Corporation",
+                folderType: "Approved",
+                itemDesc: "Internal Quality Standard for Multi-layer Film",
+                effectivityDate: "2026-02-10",
+                revisionNumber: "Rev. 01",
+                docStatus: "Active",
+                fileName: "int_spec_multilayer.pdf"
+            },
+            {
+                id: "DOC-2026-003",
+                category: "Material Evaluation",
+                clientTag: "Inks",
+                folderType: "Approved",
+                itemDesc: "Water-based Gravure Ink Eco-Compliance Evaluation",
+                effectivityDate: "2026-03-01",
+                revisionNumber: "Rev. 03",
+                docStatus: "Active",
+                fileName: "eval_inks_waterbase.pdf"
+            },
+            {
+                id: "DOC-2026-004",
+                category: "Certificate of Inspection",
+                clientTag: "Global Foods Inc.",
+                folderType: "Approved",
+                itemDesc: "Bending Stiffness & Bursting Strength Certificate",
+                effectivityDate: "2026-04-12",
+                revisionNumber: "Rev. 01",
+                docStatus: "Active",
+                fileName: "coi_global_foods.pdf"
+            },
+            {
+                id: "DOC-2026-005",
+                category: "Test Report",
+                clientTag: "2026",
+                folderType: "Approved",
+                itemDesc: "Annual Drop Test & Environmental Stress Crack Report",
+                effectivityDate: "2026-05-20",
+                revisionNumber: "Rev. 01",
+                docStatus: "Active",
+                fileName: "test_report_2026_annual.pdf"
+            },
+            {
+                id: "DOC-2026-006",
+                category: "Packing Recommendation",
+                clientTag: "2026",
+                folderType: "Templates/Formats",
+                itemDesc: "Standard Master Carton Palletization Template",
+                effectivityDate: "2026-01-01",
+                revisionNumber: "Rev. 04",
+                docStatus: "Active",
+                fileName: "packing_template_2026.xlsx"
+            }
+        ];
+
+        let currentRole = 'requestor';
+        let chartsInstance = { typeDist: null, classification: null, statusPhase: null };
+
+        // --- ON WINDOW LOAD ---
+        window.onload = function() {
+            lucide.createIcons();
+            renderRequestorTable();
+            renderOwnerTable();
+            renderMetrics();
+            renderDocumentHub('requestor');
+            renderDocumentHub('owner');
+            initCharts();
+        };
+
+        // --- ROLE SWITCHER ---
+        function switchRole(role) {
+            currentRole = role;
+            const reqBtn = document.getElementById('roleRequestorBtn');
+            const ownBtn = document.getElementById('roleOwnerBtn');
+            const reqView = document.getElementById('requestorView');
+            const ownView = document.getElementById('ownerView');
+            const avatarTxt = document.getElementById('userAvatarText');
+
+            if (role === 'requestor') {
+                reqBtn.className = "px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 bg-white text-brand-600 shadow-xs";
+                ownBtn.className = "px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-600 hover:text-slate-900";
+                reqView.classList.remove('hidden');
+                ownView.classList.add('hidden');
+                avatarTxt.textContent = "JD";
+                showToast("Switched to Requestor View");
+            } else {
+                ownBtn.className = "px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 bg-white text-brand-600 shadow-xs";
+                reqBtn.className = "px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-600 hover:text-slate-900";
+                ownView.classList.remove('hidden');
+                reqView.classList.add('hidden');
+                avatarTxt.textContent = "AD";
+                showToast("Switched to Owner/Admin View");
+                // Refresh charts
+                setTimeout(updateCharts, 100);
+            }
+            lucide.createIcons();
+        }
+
+        // --- TAB SWITCHING ---
+        function switchTab(tabId) {
+            const reqMy = document.getElementById('requestorMyRequestsContent');
+            const reqDocs = document.getElementById('requestorDocsContent');
+            const tabMy = document.getElementById('tabReqMy');
+            const tabDocs = document.getElementById('tabReqDocs');
+
+            if (tabId === 'requestorMyRequests') {
+                reqMy.classList.remove('hidden');
+                reqDocs.classList.add('hidden');
+                tabMy.className = "pb-3 border-b-2 border-brand-600 font-semibold text-sm text-brand-600 flex items-center space-x-2 transition-all";
+                tabDocs.className = "pb-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition-all";
+            } else {
+                reqDocs.classList.remove('hidden');
+                reqMy.classList.add('hidden');
+                tabDocs.className = "pb-3 border-b-2 border-brand-600 font-semibold text-sm text-brand-600 flex items-center space-x-2 transition-all";
+                tabMy.className = "pb-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition-all";
+            }
+        }
+
+        function switchOwnerTab(tabId) {
+            const dash = document.getElementById('ownerDashboardContent');
+            const reqs = document.getElementById('ownerRequestsContent');
+            const docs = document.getElementById('ownerDocsContent');
+            const tabDash = document.getElementById('tabOwnerDash');
+            const tabReqs = document.getElementById('tabOwnerReqs');
+            const tabDocs = document.getElementById('tabOwnerDocs');
+
+            dash.classList.add('hidden');
+            reqs.classList.add('hidden');
+            docs.classList.add('hidden');
+            tabDash.className = "pb-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition-all";
+            tabReqs.className = "pb-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition-all";
+            tabDocs.className = "pb-3 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-800 flex items-center space-x-2 transition-all";
+
+            if (tabId === 'dashboard') {
+                dash.classList.remove('hidden');
+                tabDash.className = "pb-3 border-b-2 border-brand-600 font-semibold text-sm text-brand-600 flex items-center space-x-2 transition-all";
+                updateCharts();
+            } else if (tabId === 'requests') {
+                reqs.classList.remove('hidden');
+                tabReqs.className = "pb-3 border-b-2 border-brand-600 font-semibold text-sm text-brand-600 flex items-center space-x-2 transition-all";
+            } else {
+                docs.classList.remove('hidden');
+                tabDocs.className = "pb-3 border-b-2 border-brand-600 font-semibold text-sm text-brand-600 flex items-center space-x-2 transition-all";
+            }
+        }
+
+        // --- TABLE RENDERING & FILTERING ---
+        function renderRequestorTable(filteredList = null) {
+            const tbody = document.getElementById('requestorTableBody');
+            const list = filteredList || requestsData;
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No requests found.</td></tr>`;
+                return;
+            }
+
+            list.forEach(req => {
+                const isUrgent = isDateUrgent(req.dateNeeded);
+                const statusBadge = getStatusBadge(req.status);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition-all border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-semibold text-slate-900">
+                        ${req.id}
+                        ${isUrgent ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-rose-50 text-rose-600">Urgent</span>' : ''}
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <div class="font-medium text-slate-900">${req.clientName}</div>
+                        <div class="text-slate-500 text-[11px] truncate max-w-xs">${req.itemDesc}</div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <div class="text-slate-900 font-medium">${req.requestType}</div>
+                        <div class="text-slate-500 text-[11px]">${req.classification}</div>
+                    </td>
+                    <td class="py-3.5 px-4 text-slate-600">
+                        <div class="flex items-center space-x-1.5">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <span>${req.dateNeeded}</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <div class="flex flex-col space-y-1">
+                            ${statusBadge}
+                            <span class="text-[11px] text-slate-500 font-medium">Phase: ${req.phase}</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                        <button onclick="downloadMockFile('${req.fileName}')" class="p-1.5 hover:bg-brand-50 text-brand-600 rounded-lg transition-all inline-flex items-center space-x-1 text-xs font-medium" title="Download Attachment">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span class="hidden sm:inline">Files</span>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function renderOwnerTable(filteredList = null) {
+            const tbody = document.getElementById('ownerTableBody');
+            const list = filteredList || requestsData;
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">No requests found.</td></tr>`;
+                return;
+            }
+
+            list.forEach(req => {
+                const isUrgent = isDateUrgent(req.dateNeeded);
+                const statusBadge = getStatusBadge(req.status);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition-all border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4">
+                        <div class="font-semibold text-slate-900">${req.id}</div>
+                        <div class="text-slate-500 text-[11px]">${req.requester}</div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">${req.department}</span>
+                        <div class="font-medium text-slate-900 mt-0.5">${req.clientName}</div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <div class="text-slate-900 font-medium truncate max-w-xs">${req.itemDesc}</div>
+                        <div class="text-slate-500 text-[11px]">${req.classification}</div>
+                    </td>
+                    <td class="py-3.5 px-4 font-medium text-slate-800">${req.requestType}</td>
+                    <td class="py-3.5 px-4 text-slate-600">
+                        <div class="flex items-center space-x-1.5">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <span>${req.dateNeeded}</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <div class="flex flex-col space-y-1">
+                            ${statusBadge}
+                            <span class="text-[11px] text-slate-600 font-medium">Phase: ${req.phase}</span>
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                        <button onclick="openStatusModal('${req.id}')" class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl transition-all text-xs font-semibold inline-flex items-center space-x-1">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            <span>Manage</span>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function filterRequestorTable() {
+            const query = document.getElementById('reqSearchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('reqStatusFilter').value;
+
+            const filtered = requestsData.filter(req => {
+                const matchesQuery = req.id.toLowerCase().includes(query) || req.clientName.toLowerCase().includes(query) || req.itemDesc.toLowerCase().includes(query) || req.requestType.toLowerCase().includes(query);
+                if (!matchesQuery) return false;
+
+                if (statusFilter === 'Urgent') return isDateUrgent(req.dateNeeded);
+                if (statusFilter && req.status !== statusFilter) return false;
+
+                return true;
+            });
+            renderRequestorTable(filtered);
+        }
+
+        function filterOwnerTable() {
+            const query = document.getElementById('ownerSearchInput').value.toLowerCase();
+            const deptFilter = document.getElementById('ownerDeptFilter').value;
+            const statusFilter = document.getElementById('ownerStatusFilter').value;
+
+            const filtered = requestsData.filter(req => {
+                const matchesQuery = req.id.toLowerCase().includes(query) || req.requester.toLowerCase().includes(query) || req.clientName.toLowerCase().includes(query) || req.itemDesc.toLowerCase().includes(query) || req.department.toLowerCase().includes(query);
+                if (!matchesQuery) return false;
+
+                if (deptFilter && req.department !== deptFilter) return false;
+                if (statusFilter === 'Urgent') return isDateUrgent(req.dateNeeded);
+                if (statusFilter && req.status !== statusFilter) return false;
+
+                return true;
+            });
+            renderOwnerTable(filtered);
+        }
+
+        // --- METRICS & UTILS ---
+        function renderMetrics() {
+            const total = requestsData.length;
+            const urgent = requestsData.filter(r => isDateUrgent(r.dateNeeded)).length;
+            const active = requestsData.filter(r => r.status === 'In Progress' || r.status === 'For Review').length;
+            const completed = requestsData.filter(r => r.status === 'Completed').length;
+
+            document.getElementById('metricTotal').textContent = total;
+            document.getElementById('metricUrgent').textContent = urgent;
+            document.getElementById('metricActive').textContent = active;
+            document.getElementById('metricCompleted').textContent = completed;
+        }
+
+        function isDateUrgent(dateStr) {
+            const today = new Date();
+            const target = new Date(dateStr);
+            const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+            return diffDays <= 4 && diffDays >= 0;
+        }
+
+        function getStatusBadge(status) {
+            if (status === 'Completed') return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700">Completed</span>`;
+            if (status === 'In Progress') return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700">In Progress</span>`;
+            return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700">For Review</span>`;
+        }
+
+        // --- NEW REQUEST MODAL & SUBMISSION ---
+        function openNewRequestModal() {
+            document.getElementById('newRequestModal').classList.remove('hidden');
+            // Default date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 5);
+            document.getElementById('reqDateNeeded').value = tomorrow.toISOString().split('T')[0];
+        }
+
+        function closeNewRequestModal() {
+            document.getElementById('newRequestModal').classList.add('hidden');
+            document.getElementById('newRequestForm').reset();
+        }
+
+        function handleNewRequestSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('reqName').value;
+            const email = document.getElementById('reqEmail').value;
+            const dept = document.getElementById('reqDepartment').value;
+            const client = document.getElementById('reqClientName').value;
+            const item = document.getElementById('reqItemDesc').value;
+            const classification = document.getElementById('reqClassification').value;
+            const type = document.getElementById('reqType').value;
+            const dateNeeded = document.getElementById('reqDateNeeded').value;
+            const fileInput = document.getElementById('reqFile');
+            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : "attached_document.pdf";
+
+            const newId = `REQ-2026-${100 + requestsData.length + 1}`;
+            const newReq = {
+                id: newId,
+                requester: name,
+                email: email,
+                department: dept,
+                clientName: client,
+                itemDesc: item,
+                classification: classification,
+                requestType: type,
+                dateNeeded: dateNeeded,
+                fileName: fileName,
+                status: "For Review",
+                phase: "Initial Submission"
+            };
+
+            requestsData.unshift(newReq);
+            renderRequestorTable();
+            renderOwnerTable();
+            renderMetrics();
+            updateCharts();
+            closeNewRequestModal();
+            showToast(`Request ${newId} submitted successfully!`);
+        }
+
+        // --- STATUS & PHASE MANAGEMENT MODAL ---
+        function openStatusModal(reqId) {
+            const req = requestsData.find(r => r.id === reqId);
+            if (!req) return;
+            document.getElementById('editReqId').value = req.id;
+            document.getElementById('editStatusVal').value = req.status;
+            document.getElementById('editPhaseVal').value = req.phase;
+            document.getElementById('statusModal').classList.remove('hidden');
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').classList.add('hidden');
+        }
+
+        function saveRequestStatus() {
+            const id = document.getElementById('editReqId').value;
+            const status = document.getElementById('editStatusVal').value;
+            const phase = document.getElementById('editPhaseVal').value;
+
+            const req = requestsData.find(r => r.id === id);
+            if (req) {
+                req.status = status;
+                req.phase = phase;
+            }
+
+            renderRequestorTable();
+            renderOwnerTable();
+            renderMetrics();
+            updateCharts();
+            closeStatusModal();
+            showToast(`Request ${id} updated successfully.`);
+        }
+
+        // --- CENTRALIZED RESOURCE FOLDER (DOCUMENT HUB) ---
+        function renderDocumentHub(viewMode) {
+            const containerId = viewMode === 'requestor' ? 'documentHubContainerRequestor' : 'documentHubContainerOwner';
+            const container = document.getElementById(containerId);
+
+            container.innerHTML = `
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base">Centralized Technical Resource Archive</h3>
+                            <p class="text-xs text-slate-500">Search approved formats, templates, and revision-controlled specs</p>
+                        </div>
+                        <button onclick="openUploadDocModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center space-x-2">
+                            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                            <span>Upload Document</span>
+                        </button>
+                    </div>
+
+                    <!-- Search Bar -->
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="${viewMode}DocSearch" oninput="filterDocumentHub('${viewMode}')" placeholder="Search by Document Code, Client Name, Item Description..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <!-- Categories Explorer -->
+                    <div class="space-y-4" id="${viewMode}DocListContainer">
+                        ${generateDocumentsHTML()}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function generateDocumentsHTML(filterQuery = '') {
+            const categories = [
+                "Technical Specifications (Initial)",
+                "Technical Specifications (Internal)",
+                "Technical Specifications (External)",
+                "Material Evaluation",
+                "Product Evaluation",
+                "Certificate of Inspection",
+                "Test Report",
+                "Packing Recommendation"
+            ];
+
+            let html = '';
+            categories.forEach(cat => {
+                const docs = documentsData.filter(d => {
+                    const matchesCat = d.category === cat;
+                    if (!matchesCat) return false;
+                    if (!filterQuery) return true;
+                    return d.id.toLowerCase().includes(filterQuery) || d.clientTag.toLowerCase().includes(filterQuery) || d.itemDesc.toLowerCase().includes(filterQuery);
+                });
+
+                if (filterQuery && docs.length === 0) return;
+
+                html += `
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
+                        <div class="bg-slate-100/80 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="folder" class="w-4 h-4 text-brand-600"></i>
+                                <span class="font-bold text-xs text-slate-800">${cat}</span>
+                            </div>
+                            <span class="text-[11px] font-semibold text-slate-500 bg-white px-2.5 py-0.5 rounded-full border border-slate-200">${docs.length} files</span>
+                        </div>
+                        <div class="divide-y divide-slate-200 bg-white">
+                `;
+
+                if (docs.length === 0) {
+                    html += `<div class="p-4 text-center text-slate-400 text-xs">No documents in this category.</div>`;
+                } else {
+                    docs.forEach(doc => {
+                        const statusBadge = getDocStatusBadge(doc.docStatus);
+                        html += `
+                            <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-slate-50/60 transition-all">
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-bold text-xs text-brand-600">${doc.id}</span>
+                                        <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">${doc.clientTag}</span>
+                                        <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600">${doc.folderType}</span>
+                                        ${statusBadge}
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-900">${doc.itemDesc}</p>
+                                    <div class="flex items-center space-x-4 text-[11px] text-slate-500">
+                                        <span>Effectivity: <b>${doc.effectivityDate}</b></span>
+                                        <span>Revision: <b>${doc.revisionNumber}</b></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                                    <button onclick="downloadMockFile('${doc.fileName}')" class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl text-xs font-semibold inline-flex items-center space-x-1.5 transition-all">
+                                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                        <span>Download</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                html += `</div></div>`;
+            });
+
+            return html;
+        }
+
+        function filterDocumentHub(viewMode) {
+            const query = document.getElementById(`${viewMode}DocSearch`).value.toLowerCase();
+            const listContainer = document.getElementById(`${viewMode}DocListContainer`);
+            listContainer.innerHTML = generateDocumentsHTML(query);
+            lucide.createIcons();
+        }
+
+        function getDocStatusBadge(status) {
+            if (status === 'Active') return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700">Active</span>`;
+            if (status === 'Supervised' || status === 'Superceded') return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600">Superceded</span>`;
+            if (status === 'Obsolete') return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700">Obsolete</span>`;
+            return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700">${status}</span>`;
+        }
+
+        function openUploadDocModal() {
+            document.getElementById('uploadDocModal').classList.remove('hidden');
+        }
+
+        function closeUploadDocModal() {
+            document.getElementById('uploadDocModal').classList.add('hidden');
+            document.getElementById('uploadDocForm').reset();
+        }
+
+        function handleDocumentUploadSubmit(e) {
+            e.preventDefault();
+            const category = document.getElementById('upCategory').value;
+            const clientTag = document.getElementById('upClientTag').value;
+            const folderType = document.getElementById('upFolderType').value;
+            const id = document.getElementById('upDocCode').value;
+            const docStatus = document.getElementById('upDocStatus').value;
+            const itemDesc = document.getElementById('upItemDesc').value;
+            const effectivityDate = document.getElementById('upEffectivity').value;
+            const revisionNumber = document.getElementById('upRevNo').value;
+            const fileObj = document.getElementById('upFileObj');
+            const fileName = fileObj.files.length > 0 ? fileObj.files[0].name : "uploaded_doc.pdf";
+
+            const newDoc = {
+                id, category, clientTag, folderType, itemDesc, effectivityDate, revisionNumber, docStatus, fileName
+            };
+
+            documentsData.unshift(newDoc);
+            renderDocumentHub('requestor');
+            renderDocumentHub('owner');
+            closeUploadDocModal();
+            showToast(`Document ${id} successfully uploaded to archive!`);
+        }
+
+        function downloadMockFile(filename) {
+            showToast(`Downloading file: ${filename}...`);
+            // Create a fake trigger download
+            const blob = new Blob([`Mock file content for ${filename}`], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.window?.URL?.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        // --- CHARTS INITIALIZATION (Chart.js) ---
+        function initCharts() {
+            // 1. Request Type Distribution
+            const ctx1 = document.getElementById('chartTypeDist').getContext('2d');
+            chartsInstance.typeDist = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Product Samples', 'Eval & Testing', 'Tech Specs', 'Packing & COI'],
+                    datasets: [{
+                        data: [35, 25, 25, 15],
+                        backgroundColor: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+                }
+            });
+
+            // 2. Request by Classification
+            const ctx2 = document.getElementById('chartClassification').getContext('2d');
+            chartsInstance.classification = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Paper & Paperboard', 'Flexible Packaging', 'Rigid Plastics'],
+                    datasets: [{
+                        label: 'Requests',
+                        data: [12, 19, 14],
+                        backgroundColor: '#6366f1',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 3. Request Status / Phase
+            const ctx3 = document.getElementById('chartStatusPhase').getContext('2d');
+            chartsInstance.statusPhase = new Chart(ctx3, {
+                type: 'pie',
+                data: {
+                    labels: ['For Review', 'In Progress', 'Completed'],
+                    datasets: [{
+                        data: [30, 45, 25],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+                }
+            });
+        }
+
+        function updateCharts() {
+            if (chartsInstance.classification) {
+                // Compute dynamic stats from requestsData
+                const paperCount = requestsData.filter(r => r.classification === 'Paper and Paperboard').length + 10;
+                const flexCount = requestsData.filter(r => r.classification === 'Flexible Packaging').length + 12;
+                const rigidCount = requestsData.filter(r => r.classification === 'Rigid Plastics').length + 9;
+
+                chartsInstance.classification.data.datasets[0].data = [paperCount, flexCount, rigidCount];
+                chartsInstance.classification.update();
+            }
+        }
+
+        // --- TOAST NOTIFICATION ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toastMsg');
+            msg.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
